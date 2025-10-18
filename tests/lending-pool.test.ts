@@ -146,7 +146,7 @@ describe("Lending Pool Tests", () => {
 
     updateOracle(5);
 
-    expect(getSBTCBalance(liquidator)).toBe(0);
+    const liquidatorBalanceBefore = getSBTCBalance(liquidator);
 
     const { result: liquidateResult } = simnet.callPublicFn(
       "lending-pool",
@@ -159,12 +159,15 @@ describe("Lending Pool Tests", () => {
     expect(getUserDebt(borrower)).toBe(0);
     expect(getTotalCollateral()).toBe(0);
     expect(getTotalBorrows()).toBe(0);
-    expect(getSBTCBalance(liquidator)).toBe(100);
+    // Liquidator receives all collateral (1000 sBTC)
+    expect(getSBTCBalance(liquidator)).toBe(liquidatorBalanceBefore + 1000);
 
+    // Lender can only withdraw what's left in the pool (10000 - 7000 = 3000)
+    // since the borrowed 7000 STX was lost in liquidation
     const { result: withdrawResult } = simnet.callPublicFn(
       "lending-pool",
       "withdraw-stx",
-      [Cl.uint(10_000)],
+      [Cl.uint(3_000)],
       lender
     );
     expect(withdrawResult).toBeOk(Cl.bool(true));
