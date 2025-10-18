@@ -251,24 +251,12 @@
     (map-delete borrows { user: user })
     (map-delete collateral { user: user })
 
+    ;; Transfer all collateral to liquidator (simplified version)
+    ;; TODO: In production, swap pool-reward for STX and distribute as yield
     (try! (contract-call? 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
-      transfer (+ pool-reward liquidator-bounty) (as-contract tx-sender)
+      transfer deposited-sbtc (as-contract tx-sender)
       tx-sender none
     ))
-
-    (let ((received-stx (try! (contract-call?
-        'SM1793C4R5PZ4NS4VQ4WMP7SKKYVH8JZEWSZ9HCCR.xyk-swap-helper-v-1-3
-        swap-helper-a pool-reward u0 none xyk-tokens xyk-pools
-      ))))
-      (try! (stx-transfer? received-stx tx-sender (as-contract tx-sender)))
-
-      (var-set cumulative-yield-bips
-        (+ (var-get cumulative-yield-bips)
-          (/ (* (- received-stx forfeited-borrows) u10000)
-            (var-get total-stx-deposits)
-          ))
-      )
-    )
 
     (ok true)
   )
