@@ -37,3 +37,4 @@ callee_filter = false
 [repl.remote_data]
 enabled = false
 api_url = 'https://api.hiro.so'
+use_mainnet_wallets = true
